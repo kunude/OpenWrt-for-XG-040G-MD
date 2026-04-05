@@ -165,6 +165,57 @@ jobs:
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
           echo "status=success" >> $GITHUB_OUTPUT
 
+      - name: Debug firmware path (方案2)
+        run: |
+          echo "=== 方案2: 检查固件生成路径 ==="
+          echo "开始详细调试固件路径..."
+          
+          # 列出所有可能的固件目录
+          echo "--- 目标目录结构 ---"
+          ls -la openwrt/bin/targets/ 2>/dev/null || echo "targets目录不存在"
+          
+          # 查找所有子目录
+          echo "--- 子目录结构 ---"
+          for dir in openwrt/bin/targets/*/; do
+            if [ -d "$dir" ]; then
+              echo "目录: $dir"
+              ls -la "$dir" 2>/dev/null | head -10
+            fi
+          done
+          
+          # 查找固件文件
+          echo "--- 固件文件查找 ---"
+          find openwrt/bin -type f \( -name "*.bin" -o -name "*.img" -o -name "*firmware*" -o -name "*image*" \) 2>/dev/null | head -20
+          
+          # 按架构查找
+          echo "--- 按架构查找 ---"
+          for arch in airoha mediatek rockchip arm64 x86; do
+            if [ -d "openwrt/bin/targets/$arch" ]; then
+              echo "架构 $arch:"
+              ls -la "openwrt/bin/targets/$arch/"
+            fi
+          done
+          
+          # 查找包含文件的目录
+          echo "--- 包含文件的目录 ---"
+          find openwrt/bin/targets -type f 2>/dev/null | while read -r file; do
+            dir=$(dirname "$file")
+            echo "文件: $file (目录: $dir)"
+          done | head -20
+          
+          # 检查环境变量
+          echo "--- 环境变量检查 ---"
+          echo "DEVICE_NAME: ${DEVICE_NAME:-未设置}"
+          echo "CONFIG_FILE: $CONFIG_FILE"
+          
+          # 验证设备配置
+          echo "--- 设备配置验证 ---"
+          if [ -n "$DEVICE_NAME" ]; then
+            echo "设备名称: $DEVICE_NAME"
+            echo "尝试路径: openwrt/bin/targets/*/*$DEVICE_NAME*"
+            ls -la openwrt/bin/targets/*/*"$DEVICE_NAME"* 2>/dev/null | head -10
+          fi
+
       - name: Prepare firmware artifacts path
         id: organize
         if: env.UPLOAD_FIRMWARE == 'true'
