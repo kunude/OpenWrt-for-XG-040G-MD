@@ -169,9 +169,45 @@ jobs:
         id: organize
         if: env.UPLOAD_FIRMWARE == 'true'
         run: |
-          cd openwrt/bin/targets/*/*
+          # 添加路径调试信息
+          echo "=== 调试固件生成路径 ==="
+          ls -la openwrt/bin/targets/
+          ls -la openwrt/bin/targets/*/ 2>/dev/null || echo "目标路径未找到"
+          
+          # 智能检测固件路径
+          FIRMWARE_PATH=""
+          for pattern in "airoha/an7581" "mediatek/filogic" "airoha/nokia_xg-040g-md" "mediatek/nokia_xg-040g-md"; do
+            if [ -d "openwrt/bin/targets/$pattern" ]; then
+              FIRMWARE_PATH="openwrt/bin/targets/$pattern"
+              echo "找到固件路径: $FIRMWARE_PATH"
+              break
+            fi
+          done
+          
+          # 如果未找到，尝试查找包含固件的目录
+          if [ -z "$FIRMWARE_PATH" ]; then
+            echo "未找到标准固件路径，尝试查找文件..."
+            find openwrt/bin -name "*.bin" -o -name "*.img" 2>/dev/null | head -5
+            
+            # 使用第一个找到的目录
+            FIRST_DIR=$(find openwrt/bin/targets -type d -maxdepth 2 2>/dev/null | head -1)
+            if [ -n "$FIRST_DIR" ]; then
+              FIRMWARE_PATH="$FIRST_DIR"
+              echo "使用备用路径: $FIRMWARE_PATH"
+            fi
+          fi
+          
+          # 如果仍然未找到，使用通配符作为最后手段
+          if [ -z "$FIRMWARE_PATH" ]; then
+            echo "警告: 无法确定固件路径，使用通配符..."
+            cd openwrt/bin/targets/*/*
+          else
+            cd "$FIRMWARE_PATH"
+          fi
+          
           rm -rf packages
           echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+          echo "固件路径已设置为: $PWD"
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v6
