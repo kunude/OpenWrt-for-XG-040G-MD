@@ -141,41 +141,97 @@ jobs:
           # Remove small incomplete files <1KB
           find dl -size -1024c -delete
 
-      - name: Compile OpenWrt firmware
+      - name: Compile OpenWrt firmware (组合方案)
         id: compile
         run: |
           cd openwrt
-          # 添加内核配置检查
-          echo "=== Checking kernel config ==="
-          ls -la build_dir/target-aarch64_cortex-a53_musl/linux-airoha_an7581/linux-6.12.80/ 2>/dev/null || echo "Kernel dir not found"
           
-          # 强制启用详细模式以便调试
+          # === 方案2: 编译过程修正 ===
+          
+          # 1. 备份原始配置
+          cp .config .config.backup
+          echo "=== 编译前配置检查 ==="
+          grep -E "^CONFIG_TARGET" .config | head -10
+          
+          # 2. 确保固件生成配置正确
+          echo "=== 确保固件生成配置 ==="
+          if grep -q "CONFIG_TARGET_ROOTFS_SQUASHFS=y" .config; then
+            echo "✅ ROOTFS 配置已启用"
+          else
+            echo "❌ 缺少 ROOTFS 配置，添加..."
+            echo "CONFIG_TARGET_ROOTFS_SQUASHFS=y" >> .config
+          fi
+          
+          # 3. 验证设备配置
+          echo "=== 验证设备配置 ==="
+          DEVICE_NAME=$(grep -o 'CONFIG_TARGET.*DEVICE_[^=]*=y' .config | head -1 | sed 's/.*DEVICE_\(.*\)=y/\1/')
+          if [[ -n "$DEVICE_NAME" ]]; then
+            echo "✅ 设备名称: $DEVICE_NAME"
+            echo "DEVICE_NAME=_${DEVICE_NAME}" >> $GITHUB_ENV
+          else
+            echo "❌ 未找到设备配置!"
+            exit 1
+          fi
+          
+          # 4. 编译固件（详细模式）
+          echo "=== 开始编译固件 ==="
           make -j1 V=s 2>&1 | tee build.log
           
-          # 检查编译结果
+          # 5. 检查编译结果
           if [ $? -ne 0 ]; then
-            echo "=== Build failed - showing last 100 lines ==="
+            echo "=== 编译失败 - 显示最后100行 ==="
             tail -100 build.log
             exit 1
           fi
-          DEVICE_NAME=$(grep -o 'CONFIG_TARGET.*DEVICE_[^=]*=y' .config | head -1 | sed 's/.*DEVICE_\(.*\)=y/\1/')
-          if [[ -n "$DEVICE_NAME" ]]; then
-            echo "DEVICE_NAME=_${DEVICE_NAME}" >> $GITHUB_ENV
-          fi
+          
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
           echo "status=success" >> $GITHUB_OUTPUT
+          
+          # === 方案1: 固件生成验证 ===
+          
+          echo "=== 固件生成验证 ==="
+          
+          # 1. 检查编译日志中的错误
+          echo "检查编译错误..."
+          grep -i "error\|failed" build.log | tail -30
+          
+          # 2. 检查固件相关输出
+          echo "检查固件相关输出..."
+          grep -i "firmware\|image\|bin\|img" build.log | tail -30
+          
+          # 3. 检查配置是否被修改
+          if ! diff .config .config.backup > /dev/null; then
+            echo "⚠️  配置文件在编译过程中被修改！"
+            diff .config .config.backup | head -20
+          fi
+          
+          # 4. 查找固件文件
+          echo "查找固件文件..."
+          FIRMWARE_FILES=$(find bin -type f \( -name "*.bin" -o -name "*.img" -o -name "*.gz" \) 2>/dev/null)
+          if [ -n "$FIRMWARE_FILES" ]; then
+            echo "✅ 找到固件文件:"
+            echo "$FIRMWARE_FILES" | head -20
+          else
+            echo "❌ 未找到固件文件！"
+            echo "固件目录内容:"
+            ls -la bin/targets/ 2>/dev/null || echo "固件目录不存在"
+            find bin -type f 2>/dev/null | head -10
+            exit 1
+          fi
 
-      - name: Debug firmware path (方案2)
+      - name: Debug firmware path (方案1+2组合验证)
         run: |
-          echo "=== 方案2: 检查固件生成路径 ==="
-          echo "开始详细调试固件路径..."
+          echo "=== 方案1+2组合验证 ==="
+          
+          # === 方案2: 路径调试 ===
+          echo "--- 方案2: 检查固件生成路径 ---"
           
           # 列出所有可能的固件目录
-          echo "--- 目标目录结构 ---"
+          echo "目标目录结构:"
           ls -la openwrt/bin/targets/ 2>/dev/null || echo "targets目录不存在"
           
           # 查找所有子目录
-          echo "--- 子目录结构 ---"
+          echo "子目录结构:"
           for dir in openwrt/bin/targets/*/; do
             if [ -d "$dir" ]; then
               echo "目录: $dir"
@@ -183,12 +239,8 @@ jobs:
             fi
           done
           
-          # 查找固件文件
-          echo "--- 固件文件查找 ---"
-          find openwrt/bin -type f \( -name "*.bin" -o -name "*.img" -o -name "*firmware*" -o -name "*image*" \) 2>/dev/null | head -20
-          
           # 按架构查找
-          echo "--- 按架构查找 ---"
+          echo "按架构查找:"
           for arch in airoha mediatek rockchip arm64 x86; do
             if [ -d "openwrt/bin/targets/$arch" ]; then
               echo "架构 $arch:"
@@ -196,24 +248,33 @@ jobs:
             fi
           done
           
-          # 查找包含文件的目录
-          echo "--- 包含文件的目录 ---"
-          find openwrt/bin/targets -type f 2>/dev/null | while read -r file; do
-            dir=$(dirname "$file")
-            echo "文件: $file (目录: $dir)"
-          done | head -20
+          # === 方案1: 详细验证 ===
+          echo "--- 方案1: 详细固件验证 ---"
+          
+          # 查找固件文件
+          echo "固件文件查找:"
+          find openwrt/bin -type f \( -name "*.bin" -o -name "*.img" -o -name "*firmware*" -o -name "*image*" \) 2>/dev/null | head -20
           
           # 检查环境变量
-          echo "--- 环境变量检查 ---"
+          echo "环境变量检查:"
           echo "DEVICE_NAME: ${DEVICE_NAME:-未设置}"
           echo "CONFIG_FILE: $CONFIG_FILE"
           
           # 验证设备配置
-          echo "--- 设备配置验证 ---"
+          echo "设备配置验证:"
           if [ -n "$DEVICE_NAME" ]; then
             echo "设备名称: $DEVICE_NAME"
             echo "尝试路径: openwrt/bin/targets/*/*$DEVICE_NAME*"
             ls -la openwrt/bin/targets/*/*"$DEVICE_NAME"* 2>/dev/null | head -10
+          fi
+          
+          # 强制验证固件生成
+          FIRMWARE_COUNT=$(find openwrt/bin -name "*.bin" -o -name "*.img" 2>/dev/null | wc -l)
+          if [ "$FIRMWARE_COUNT" -eq 0 ]; then
+            echo "❌ 错误: 固件未生成！"
+            exit 1
+          else
+            echo "✅ 固件生成验证通过，找到 $FIRMWARE_COUNT 个固件文件"
           fi
 
       - name: Prepare firmware artifacts path
