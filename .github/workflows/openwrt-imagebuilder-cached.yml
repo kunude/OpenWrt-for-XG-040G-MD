@@ -144,10 +144,18 @@ jobs:
         run: |
           cd imagebuilder
           
-          # Configure to use local packages from base build
+          # Configure to use both local packages and official OpenWrt repositories
           cat > repositories.conf <<EOF
+          # Local packages (built in previous step)
           src/gz local_base file://$GITHUB_WORKSPACE/openwrt/bin/packages/aarch64_cortex-a53/base
           src/gz local_luci file://$GITHUB_WORKSPACE/openwrt/bin/packages/aarch64_cortex-a53/luci
+          
+          # Official OpenWrt binary repositories
+          src/gz snapshots_base https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/base
+          src/gz snapshots_luci https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/luci
+          src/gz snapshots_packages https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/packages
+          src/gz snapshots_printing https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/printing
+          src/gz snapshots_routing https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/routing
           EOF
 
       - name: Build firmware image

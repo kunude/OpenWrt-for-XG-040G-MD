@@ -89,6 +89,7 @@ jobs:
           
           # Explicitly install critical packages first to ensure they are available
           # when the config is processed (important for GitHub Actions)
+          # Use the correct package names from official OpenWrt repositories
           ./scripts/feeds install luci-base
           ./scripts/feeds install luci-mod-admin-full
           ./scripts/feeds install luci-app-cups

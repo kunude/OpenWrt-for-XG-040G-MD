@@ -1,4 +1,15 @@
+# Git feeds for source-based builds
 src-git packages https://github.com/openwrt/packages.git;master
 src-git luci https://github.com/openwrt/luci.git;master
 src-git routing https://github.com/openwrt/routing.git;master
 src-git openclash https://github.com/vernesong/OpenClash.git;master
+
+# Binary package repositories for Image Builder
+# These URLs match the official OpenWrt repositories the user provided
+src/gz snapshots_base https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/base
+src/gz snapshots_luci https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/luci
+src/gz snapshots_packages https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/packages
+src/gz snapshots_printing https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/printing
+src/gz snapshots_routing https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/routing
+src/gz snapshots_telephony https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/telephony
+src/gz snapshots_video https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/video
