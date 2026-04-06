@@ -150,12 +150,14 @@ jobs:
           src/gz local_base file://$GITHUB_WORKSPACE/openwrt/bin/packages/aarch64_cortex-a53/base
           src/gz local_luci file://$GITHUB_WORKSPACE/openwrt/bin/packages/aarch64_cortex-a53/luci
           
-          # Official OpenWrt binary repositories
+          # Official OpenWrt binary repositories for CUPS and Chinese packages
           src/gz snapshots_base https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/base
           src/gz snapshots_luci https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/luci
           src/gz snapshots_packages https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/packages
           src/gz snapshots_printing https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/printing
           src/gz snapshots_routing https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/routing
+          src/gz snapshots_video https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/video
+          src/gz snapshots_telephony https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/telephony
           EOF
 
       - name: Build firmware image
