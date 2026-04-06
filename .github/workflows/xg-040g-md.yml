@@ -86,6 +86,19 @@ jobs:
             cp -f ../$FEEDS_CONF ./feeds.conf.default
           fi
           ./scripts/feeds update -a
+          
+          # Explicitly install critical packages first to ensure they are available
+          # when the config is processed (important for GitHub Actions)
+          ./scripts/feeds install luci-base
+          ./scripts/feeds install luci-mod-admin-full
+          ./scripts/feeds install luci-app-cups
+          ./scripts/feeds install luci-i18n-base-zh-cn
+          ./scripts/feeds install luci-i18n-cups-zh-cn
+          ./scripts/feeds install cups
+          ./scripts/feeds install cups-filters
+          ./scripts/feeds install cups-ppdc
+          
+          # Then install all other packages
           ./scripts/feeds install -a -f
           # ./scripts/feeds install \
           #   airoha-en7581-npu-firmware \
