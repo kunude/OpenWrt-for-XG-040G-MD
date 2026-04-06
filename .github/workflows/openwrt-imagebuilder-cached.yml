@@ -1,0 +1,194 @@
+name: OpenWrt XG-040G-MD ImageBuilder (Cached)
+
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Extra packages"
+        required: false
+        default: "luci-ssl umdns kmod-mtd-rw curl wget-ssl"
+  push:
+    branches:
+      - main
+    paths:
+      - config/xg-040g-md.config
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+      cache-hit: ${{ steps.toolchain-cache.outputs.cache-hit }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate cache key
+        id: cache-key
+        run: |
+          echo "key=toolchain-${{ runner.os }}-${{ hashFiles('config/xg-040g-md.config') }}-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache Toolchain
+        id: toolchain-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            openwrt-sdk
+            openwrt-toolchain
+          key: ${{ steps.cache-key.outputs.key }}
+          restore-keys: |
+            toolchain-${{ runner.os }}-
+
+  build-toolchain:
+    needs: prepare
+    runs-on: ubuntu-latest
+    if: needs.prepare.outputs.cache-hit != 'true'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            build-essential clang flex bison g++ gawk gcc-multilib \
+            gettext git libncurses-dev libssl-dev python3 python3-distutils \
+            rsync unzip zlib1g-dev file wget
+
+      - name: Clone OpenWrt
+        run: |
+          git clone --depth 1 https://github.com/openwrt/openwrt.git -b openwrt-25.12 openwrt
+
+      - name: Setup feeds
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a -f
+
+      - name: Load config
+        run: |
+          cd openwrt
+          cp ../config/xg-040g-md.config .config
+          make defconfig
+
+      - name: Build SDK/Toolchain
+        run: |
+          cd openwrt
+          # Build just the SDK and toolchain (not full firmware)
+          make -j$(nproc) tools/install
+          make -j$(nproc) toolchain/install
+          
+          # Create SDK package
+          tar -czf ../openwrt-sdk.tar.gz staging_dir/host* staging_dir/target*
+          
+          # Create toolchain package
+          tar -czf ../openwrt-toolchain.tar.gz build_dir/toolchain*
+
+      - name: Upload SDK
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwrt-sdk
+          path: openwrt-sdk.tar.gz
+          retention-days: 7
+
+      - name: Upload Toolchain
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwrt-toolchain
+          path: openwrt-toolchain.tar.gz
+          retention-days: 7
+
+  build-image:
+    needs: [prepare, build-toolchain]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache or download artifacts
+        run: |
+          if [ "${{ needs.prepare.outputs.cache-hit }}" = "true" ]; then
+            echo "Cache hit, using cached toolchain..."
+          else
+            echo "Cache miss, downloading SDK and toolchain artifacts..."
+            # Download would happen automatically via needs dependency
+          fi
+
+      - name: Download SDK/Toolchain
+        uses: actions/download-artifact@v4
+        with:
+          name: openwrt-sdk
+          path: .
+
+      - name: Download ImageBuilder
+        uses: actions/download-artifact@v4
+        with:
+          name: imagebuilder
+          path: .
+
+      - name: Setup environment
+        run: |
+          # Extract SDK if available
+          if [ -f "openwrt-sdk.tar.gz" ]; then
+            tar -xzf openwrt-sdk.tar.gz
+          fi
+          
+          # Extract ImageBuilder
+          tar -xf openwrt-imagebuilder-*.tar.*
+          mv openwrt-imagebuilder-* imagebuilder
+
+      - name: Configure repositories
+        run: |
+          cd imagebuilder
+          
+          # Configure to use local packages from base build
+          cat > repositories.conf <<EOF
+          src/gz local_base file://$GITHUB_WORKSPACE/openwrt/bin/packages/aarch64_cortex-a53/base
+          src/gz local_luci file://$GITHUB_WORKSPACE/openwrt/bin/packages/aarch64_cortex-a53/luci
+          EOF
+
+      - name: Build firmware image
+        run: |
+          cd imagebuilder
+          make image \
+            PROFILE=nokia_xg-040g-md \
+            PACKAGES="\
+              -ppp -ppp-mod-pppoe \
+              luci-ssl \
+              luci-i18n-base-zh-cn \
+              luci-app-cups \
+              luci-i18n-cups-zh-cn \
+              cups \
+              cups-filters \
+              umdns \
+              kmod-mtd-rw \
+              curl \
+              wget-ssl \
+              ${{ github.event.inputs.packages }} \
+            " \
+            FILES=../files
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt-firmware
+          path: |
+            imagebuilder/bin/targets/*/*.bin
+            imagebuilder/bin/targets/*/*.img
+          retention-days: 7
+
+      - name: Create release
+        if: github.event_name == 'push'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ format('v{0}', github.sha) }}
+          artifacts: |
+            imagebuilder/bin/targets/*/*.bin
+            imagebuilder/bin/targets/*/*.img
+          body: |
+            Automated build from commit ${{ github.sha }}
+            Built using Image Builder with cached toolchain
+          token: ${{ secrets.GITHUB_TOKEN }}
