@@ -1,6 +1,6 @@
-# OpenWrt for XG-040G-MD
+# OpenWrt for XG-040G-MD  （所有代码那只虾写的，有锅别找我）
 
-OpenWrt firmware for NOKIA BELL XG-040G-MD
+OpenWrt firmware for NOKIA BELL XG-040G-MD(不支持 FM25G02B flash) 
 
 编译脚本基于 [Cairongzeng: Add support Nokia Bell XG-040G-MD](https://github.com/Cairongzeng/openwrt/tree/xg040gmd) , [Actions-OpenWrt](https://github.com/xuxin1955/Actions-OpenWrt) 修改。
 
