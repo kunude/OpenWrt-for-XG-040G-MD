@@ -178,6 +178,7 @@ jobs:
               wget-ssl \
               ${{ github.event.inputs.packages }} \
             " \
+            V=s \
             FILES=../files
 
       - name: Upload firmware
