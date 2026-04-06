@@ -1,4 +1,4 @@
-# OpenWrt for XG-040G-MD  （所有代码那只虾写的，有锅别找我）
+# OpenWrt for XG-040G-MD  （所有代码那只🦞写的，有锅别找我）
 
 OpenWrt firmware for NOKIA BELL XG-040G-MD(不支持 FM25G02B flash) 
 
