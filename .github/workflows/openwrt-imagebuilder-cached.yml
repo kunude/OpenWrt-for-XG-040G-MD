@@ -161,8 +161,6 @@ jobs:
           src/gz snapshots_video https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/video
           src/gz snapshots_nss_packages https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/nss_packages
           EOF
-          src/gz snapshots_telephony https://downloads.openwrt.org/snapshots/packages/aarch64_cortex-a53/telephony
-          EOF
 
       - name: Build firmware image
         run: |
