@@ -1,0 +1,356 @@
+name: Test_XG_040G_MD
+
+permissions:
+  contents: write
+  actions: write
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      log_switch:
+        description: "Build logs"
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CONFIG_FILE: "config/xg-040g-md.config"
+  # REPO_URL: https://github.com/immortalwrt/immortalwrt.git
+  REPO_URL: https://github.com/openwrt/openwrt.git
+  REPO_BRANCH: main
+  FEEDS_CONF: feeds.conf.default-main
+  UPLOAD_FIRMWARE: true
+  UPLOAD_RELEASE: true
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup environment dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: ${{ env.TZ }}
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential clang flex bison g++ gawk \
+          gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
+          python3-setuptools python3-dev rsync swig unzip libpython3-dev \
+          zlib1g-dev file wget squashfs-tools mkbootimg device-tree-compiler
+          sudo apt update
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          if command -v mkbootimg >/dev/null 2>&1; then
+            echo "mkbootimg found at: $(command -v mkbootimg)"
+          else
+            echo "❌ mkbootimg not found in PATH!"
+          fi
+
+          if [[ -n "$TZ" ]]; then
+            sudo timedatectl set-timezone "$TZ"
+          else
+            echo "TZ is not set, skipping timezone setup."
+          fi
+
+      - name: Ensure Python build tools
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install Unidecode
+
+      - name: Install additional system dependencies
+        run: |
+          sudo -E apt-get -qq install \
+            libpam0g-dev \
+            libtirpc-dev \
+            libev-dev \
+            liblzma-dev \
+            libnetsnmp-dev \
+            ruby \
+            libi2c-dev
+
+      - name: Clone OpenWrt source code and apply XG-040G-MD patch files
+        run: |
+          git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" openwrt
+          cd patch
+          [ -e airoha/01_leds ] && cp -f airoha/01_leds ../openwrt/target/linux/airoha/an7581/base-files/etc/board.d/01_leds
+          [ -e airoha/02_network ] && cp -f airoha/02_network ../openwrt/target/linux/airoha/an7581/base-files/etc/board.d/02_network
+          [ -e airoha/an7581.mk ] && cp -f airoha/an7581.mk ../openwrt/target/linux/airoha/image/an7581.mk
+          [ -e airoha/an7581-nokia_xg-040g-md.dts ] && cp -f airoha/an7581-nokia_xg-040g-md.dts ../openwrt/target/linux/airoha/dts/an7581-nokia_xg-040g-md.dts
+          [ -d "airoha/patches-6.12" ] && cp -f airoha/patches-6.12/*.patch ../openwrt/target/linux/airoha/patches-6.12/
+          [ -d "mediatek/patches-6.12" ] && cp -f mediatek/patches-6.12/*.patch ../openwrt/target/linux/mediatek/patches-6.12/
+          # 跳过损坏的补丁文件 499-mtd-spinand-FudanMicro-FM25G02B.patch
+          [ -d "generic/pending-6.12" ] && find generic/pending-6.12/ -name "*.patch" ! -name "499-mtd-spinand-FudanMicro-FM25G02B.patch" -exec cp -f {} ../openwrt/target/linux/generic/pending-6.12/ \;
+
+
+      - name: Update & Install feeds
+        working-directory: ./openwrt
+        run: |
+          if [ -e ../$FEEDS_CONF ]; then
+            cp -f ../$FEEDS_CONF ./feeds.conf.default
+          fi
+          ./scripts/feeds update -a
+          
+          # Explicitly install critical packages first to ensure they are available
+          # when the config is processed (important for GitHub Actions)
+          # Install luasrcdiet first (required for LuCI compilation)
+          ./scripts/feeds install luasrcdiet
+          
+          # Then install critical LuCI packages
+          ./scripts/feeds install luci-base
+          ./scripts/feeds install luci-mod-admin-full
+          ./scripts/feeds install luci-app-cups
+          ./scripts/feeds install luci-i18n-base-zh-cn
+          ./scripts/feeds install luci-i18n-cups-zh-cn
+          ./scripts/feeds install cups
+          ./scripts/feeds install cups-filters
+          ./scripts/feeds install cups-ppdc
+          
+          # Then install all other packages
+          ./scripts/feeds install -a -f
+          # ./scripts/feeds install \
+          #   airoha-en7581-npu-firmware \
+          #   apk \
+          #   dnsmasq \
+          #   dropbear \
+          #   firewall4 \
+          #   fstools \
+          #   ip-full \
+          #   kmod-gpio-button-hotplug \
+          #   kmod-i2c-an7581 \
+          #   kmod-leds-gpio \
+          #   kmod-phy-airoha-en8811h \
+          #   logd \
+          #   mtd \
+          #   netifd \
+          #   odhcp6c \
+          #   odhcpd-ipv6only \
+          #   ppp \
+          #   ppp-mod-pppoe \
+          #   procd \
+          #   uci \
+          #   uclient-fetch \
+          #   uboot-envtools \
+          #   ubi-utils \
+          #   urandom-seed \
+          #   urngd \
+          #   usign \
+          #   umdns \
+          #   luci \
+          #   luci-base \
+          #   luci-mod-admin-full \
+          #   luci-ssl
+
+      - name: Copy configuration and defconfig
+        run: |
+          cp -fv "${CONFIG_FILE}" openwrt/.config
+          cd openwrt && make defconfig
+          [ -e .config ] && cp .config defconfig-final.config
+
+      - name: Upload build config files
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-config
+          path: |
+            config/xg-040g-md.config
+            openwrt/defconfig-final.config
+            openwrt/feeds.conf.default
+
+      - name: Download packages
+        working-directory: ./openwrt
+        run: |
+          make download -j4 V=s
+          # Remove small incomplete files <1KB
+          find dl -size -1024c -delete
+
+      - name: Compile OpenWrt firmware
+        id: compile
+        run: |
+          cd openwrt
+          
+          # 配置检查
+          echo "=== 配置检查 ==="
+          grep -E "^CONFIG_TARGET" .config | head -5
+          
+          # 获取设备名称
+          DEVICE_NAME=$(grep -o 'CONFIG_TARGET.*DEVICE_[^=]*=y' .config | head -1 | sed 's/.*DEVICE_\(.*\)=y/\1/')
+          if [[ -n "$DEVICE_NAME" ]]; then
+            echo "设备名称: $DEVICE_NAME"
+            echo "DEVICE_NAME=_${DEVICE_NAME}" >> $GITHUB_ENV
+          else
+            echo "❌ 未找到设备配置!"
+            exit 1
+          fi
+          
+          # 编译固件（测试模式，只编译内核和基础包）
+          echo "=== 开始测试编译 ==="
+          make -j1 V=s 2>&1 | tee build.log
+          
+          # 检查编译结果
+          if [ $? -ne 0 ]; then
+            echo "=== 编译失败 ==="
+            tail -50 build.log
+            exit 1
+          fi
+          
+          echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+          echo "status=success" >> $GITHUB_OUTPUT
+          
+          # 验证固件生成
+          echo "=== 固件生成验证 ==="
+          FIRMWARE_FILES=$(find bin -type f \( -name "*.bin" -o -name "*.img" -o -name "*.gz" \) 2>/dev/null)
+          if [ -n "$FIRMWARE_FILES" ]; then
+            echo "✅ 找到固件文件:"
+            echo "$FIRMWARE_FILES" | head -10
+          else
+            echo "❌ 未找到固件文件！"
+            exit 1
+          fi
+
+      
+
+      - name: Prepare firmware artifacts path
+        id: organize
+        if: env.UPLOAD_FIRMWARE == 'true'
+        run: |
+          # 查找固件路径
+          echo "=== 查找固件路径 ==="
+          FIRMWARE_PATH=""
+          for pattern in "airoha/an7581" "mediatek/filogic" "airoha/nokia_xg-040g-md" "mediatek/nokia_xg-040g-md"; do
+            if [ -d "openwrt/bin/targets/$pattern" ]; then
+              FIRMWARE_PATH="openwrt/bin/targets/$pattern"
+              echo "固件路径: $FIRMWARE_PATH"
+              break
+            fi
+          done
+          
+          # 如果未找到，尝试查找包含固件的目录
+          if [ -z "$FIRMWARE_PATH" ]; then
+            find openwrt/bin -name "*.bin" -o -name "*.img" 2>/dev/null | head -5
+            FIRST_DIR=$(find openwrt/bin/targets -type d -maxdepth 2 2>/dev/null | head -1)
+            if [ -n "$FIRST_DIR" ]; then
+              FIRMWARE_PATH="$FIRST_DIR"
+              echo "备用路径: $FIRMWARE_PATH"
+            fi
+          fi
+          
+          # 设置固件路径
+          if [ -z "$FIRMWARE_PATH" ]; then
+            echo "警告: 使用通配符路径..."
+            cd openwrt/bin/targets/*/*
+          else
+            cd "$FIRMWARE_PATH"
+          fi
+          
+          rm -rf packages
+          echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+          echo "固件路径: $PWD"
+
+      - name: Collect additional artifacts
+        id: artifacts
+        if: env.UPLOAD_FIRMWARE == 'true'
+        run: |
+          echo "=== 收集额外构建产物 ==="
+          cd openwrt
+          
+          # Create artifacts directory
+          mkdir -p ../artifacts
+          
+          # Collect kernel and modules
+          echo "收集内核文件..."
+          find build_dir -name "vmlinuz*" -o -name "uImage*" -o -name "zImage*" | head -5 | xargs -I {} cp {} ../artifacts/ 2>/dev/null || true
+          
+          # Collect tools and SDK files
+          echo "收集工具链文件..."
+          if [ -d "staging_dir/toolchain*" ]; then
+            tar -czf ../artifacts/toolchain.tar.gz staging_dir/toolchain* 2>/dev/null || true
+          fi
+          
+          # Collect build logs
+          echo "收集构建日志..."
+          cp build.log ../artifacts/ 2>/dev/null || true
+          
+          # Collect configuration files
+          echo "收集配置文件..."
+          cp .config ../artifacts/kernel.config 2>/dev/null || true
+          cp feeds.conf.default ../artifacts/feeds.conf 2>/dev/null || true
+          
+          # Collect any chat SDK or AI-related files if they exist
+          echo "收集AI/SDK相关文件..."
+          find . -name "*chat*" -o -name "*sdk*" -o -name "*ai*" 2>/dev/null | grep -v ".git" | head -10 | xargs -I {} cp -r {} ../artifacts/ 2>/dev/null || true
+          
+          echo "ARTIFACTS_DIR=$PWD/../artifacts" >> $GITHUB_ENV
+          echo "构建产物收集完成"
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v6
+        if: env.UPLOAD_FIRMWARE == 'true'
+        with:
+          name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: ${{ env.FIRMWARE }}/*
+
+      - name: Upload additional artifacts
+        uses: actions/upload-artifact@v6
+        if: env.UPLOAD_FIRMWARE == 'true'
+        with:
+          name: OpenWrt_artifacts${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: ${{ env.ARTIFACTS_DIR }}/*
+
+      - name: Generate release tag and notes
+        id: tag
+        if: env.UPLOAD_RELEASE == 'true'
+        run: |
+          echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
+          cat <<EOF > release.txt
+          🧪 Test OpenWrt firmware for XG-040G-MD
+          ----------------------
+          **⚠️ 测试版本 - 包含完整构建产物**
+          
+          设备型号: XG-040G-MD
+          构建时间: $(date +"%Y-%m-%d %H:%M")
+          内核版本: 6.12.X
+          源码仓库: $REPO_URL
+          分支: $REPO_BRANCH
+          
+          ## 包含的构建产物
+          - 固件镜像文件 (.bin/.img)
+          - 工具链 (toolchain.tar.gz)
+          - 内核配置文件 (kernel.config)
+          - 构建日志 (build.log)
+          - 系统配置文件 (feeds.conf)
+          - AI/SDK相关文件 (如存在)
+          
+          ## 测试目的
+          - 验证增强型工作流程
+          - 验证所有依赖项安装
+          - 验证构建产物收集
+          - 验证GitHub Release发布
+          EOF
+
+      - name: Publish Test GitHub Release
+        uses: ncipollo/release-action@v1
+        if: env.UPLOAD_RELEASE == 'true'
+        with:
+          tag: ${{ steps.tag.outputs.release_tag }}-test
+          bodyFile: release.txt
+          artifacts: |
+            ${{ env.FIRMWARE }}/*
+            openwrt/artifacts/*
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          retain_days: 7
+          keep_minimum_runs: 5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
