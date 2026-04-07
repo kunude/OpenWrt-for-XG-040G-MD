@@ -181,6 +181,18 @@ jobs:
             V=s \
             FILES=../files
 
+      - name: Download SDK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: openwrt-sdk
+          path: .
+
+      - name: Download Toolchain artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: openwrt-toolchain
+          path: .
+
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
@@ -198,6 +210,8 @@ jobs:
           artifacts: |
             imagebuilder/bin/targets/*/*.bin
             imagebuilder/bin/targets/*/*.img
+            openwrt-sdk.tar.gz
+            openwrt-toolchain.tar.gz
           body: |
             Automated build from commit ${{ github.sha }}
             Built using Image Builder with cached toolchain
