@@ -263,33 +263,33 @@ jobs:
           echo "=== 收集额外构建产物 ==="
           cd openwrt
           
-          # Create artifacts directory
-          mkdir -p ../artifacts
+          # Create artifacts directory (use workspace root to avoid relative path issues)
+          mkdir -p $GITHUB_WORKSPACE/artifacts
           
           # Collect kernel and modules
           echo "收集内核文件..."
-          find build_dir -name "vmlinuz*" -o -name "uImage*" -o -name "zImage*" | head -5 | xargs -I {} cp {} ../artifacts/ 2>/dev/null || true
+          find build_dir -name "vmlinuz*" -o -name "uImage*" -o -name "zImage*" | head -5 | xargs -I {} cp {} $GITHUB_WORKSPACE/artifacts/ 2>/dev/null || true
           
           # Collect tools and SDK files
           echo "收集工具链文件..."
           if [ -d "staging_dir/toolchain*" ]; then
-            tar -czf ../artifacts/toolchain.tar.gz staging_dir/toolchain* 2>/dev/null || true
+            tar -czf $GITHUB_WORKSPACE/artifacts/toolchain.tar.gz staging_dir/toolchain* 2>/dev/null || true
           fi
           
           # Collect build logs
           echo "收集构建日志..."
-          cp build.log ../artifacts/ 2>/dev/null || true
+          cp build.log $GITHUB_WORKSPACE/artifacts/ 2>/dev/null || true
           
           # Collect configuration files
           echo "收集配置文件..."
-          cp .config ../artifacts/kernel.config 2>/dev/null || true
-          cp feeds.conf.default ../artifacts/feeds.conf 2>/dev/null || true
+          cp .config $GITHUB_WORKSPACE/artifacts/kernel.config 2>/dev/null || true
+          cp feeds.conf.default $GITHUB_WORKSPACE/artifacts/feeds.conf 2>/dev/null || true
           
           # Collect any chat SDK or AI-related files if they exist
           echo "收集AI/SDK相关文件..."
-          find . -name "*chat*" -o -name "*sdk*" -o -name "*ai*" 2>/dev/null | grep -v ".git" | head -10 | xargs -I {} cp -r {} ../artifacts/ 2>/dev/null || true
+          find . -name "*chat*" -o -name "*sdk*" -o -name "*ai*" 2>/dev/null | grep -v ".git" | head -10 | xargs -I {} cp -r {} $GITHUB_WORKSPACE/artifacts/ 2>/dev/null || true
           
-          echo "ARTIFACTS_DIR=$PWD/../artifacts" >> $GITHUB_ENV
+          echo "ARTIFACTS_DIR=$GITHUB_WORKSPACE/artifacts" >> $GITHUB_ENV
           echo "构建产物收集完成"
 
       - name: Upload firmware artifacts
@@ -304,7 +304,7 @@ jobs:
         if: env.UPLOAD_FIRMWARE == 'true'
         with:
           name: OpenWrt_artifacts${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-          path: ${{ env.ARTIFACTS_DIR }}/*
+          path: artifacts/*
 
       - name: Generate release tag and notes
         id: tag
@@ -337,7 +337,7 @@ jobs:
           bodyFile: release.txt
           artifacts: |
             ${{ env.FIRMWARE }}/*
-            openwrt/artifacts/*
+            artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
