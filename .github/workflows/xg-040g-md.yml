@@ -65,6 +65,17 @@ jobs:
           python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip install Unidecode
 
+      - name: Install additional system dependencies
+        run: |
+          sudo -E apt-get -qq install \
+            libpam0g-dev \
+            libtirpc-dev \
+            libev-dev \
+            liblzma-dev \
+            libnetsnmp-dev \
+            ruby \
+            libi2c-dev
+
       - name: Clone OpenWrt source code and apply XG-040G-MD patch files
         run: |
           git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" openwrt
@@ -89,7 +100,10 @@ jobs:
           
           # Explicitly install critical packages first to ensure they are available
           # when the config is processed (important for GitHub Actions)
-          # Use the correct package names from official OpenWrt repositories
+          # Install luasrcdiet first (required for LuCI compilation)
+          ./scripts/feeds install luasrcdiet
+          
+          # Then install critical LuCI packages
           ./scripts/feeds install luci-base
           ./scripts/feeds install luci-mod-admin-full
           ./scripts/feeds install luci-app-cups
