@@ -1,0 +1,200 @@
+﻿2026-04-06T06:42:20.0898055Z Current runner version: '2.333.1'
+2026-04-06T06:42:20.0926996Z ##[group]Runner Image Provisioner
+2026-04-06T06:42:20.0927772Z Hosted Compute Agent
+2026-04-06T06:42:20.0928317Z Version: 20260213.493
+2026-04-06T06:42:20.0929191Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+2026-04-06T06:42:20.0929863Z Build Date: 2026-02-13T00:28:41Z
+2026-04-06T06:42:20.0930548Z Worker ID: {825c37b2-b3d0-4bd4-99a2-efe4b2fe2ff0}
+2026-04-06T06:42:20.0931231Z Azure Region: northcentralus
+2026-04-06T06:42:20.0931819Z ##[endgroup]
+2026-04-06T06:42:20.0933396Z ##[group]Operating System
+2026-04-06T06:42:20.0934037Z Ubuntu
+2026-04-06T06:42:20.0934508Z 24.04.4
+2026-04-06T06:42:20.0934990Z LTS
+2026-04-06T06:42:20.0935469Z ##[endgroup]
+2026-04-06T06:42:20.0935942Z ##[group]Runner Image
+2026-04-06T06:42:20.0936488Z Image: ubuntu-24.04
+2026-04-06T06:42:20.0936939Z Version: 20260329.72.1
+2026-04-06T06:42:20.0938185Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260329.72/images/ubuntu/Ubuntu2404-Readme.md
+2026-04-06T06:42:20.0939831Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260329.72
+2026-04-06T06:42:20.0940740Z ##[endgroup]
+2026-04-06T06:42:20.0943244Z ##[group]GITHUB_TOKEN Permissions
+2026-04-06T06:42:20.0945535Z Actions: write
+2026-04-06T06:42:20.0946134Z ArtifactMetadata: write
+2026-04-06T06:42:20.0946668Z Attestations: write
+2026-04-06T06:42:20.0947227Z Checks: write
+2026-04-06T06:42:20.0947707Z Contents: write
+2026-04-06T06:42:20.0948173Z Deployments: write
+2026-04-06T06:42:20.0948727Z Discussions: write
+2026-04-06T06:42:20.0949616Z Issues: write
+2026-04-06T06:42:20.0950133Z Metadata: read
+2026-04-06T06:42:20.0950917Z Models: read
+2026-04-06T06:42:20.0951401Z Packages: write
+2026-04-06T06:42:20.0951902Z Pages: write
+2026-04-06T06:42:20.0952529Z PullRequests: write
+2026-04-06T06:42:20.0953127Z RepositoryProjects: write
+2026-04-06T06:42:20.0953657Z SecurityEvents: write
+2026-04-06T06:42:20.0954569Z Statuses: write
+2026-04-06T06:42:20.0955128Z ##[endgroup]
+2026-04-06T06:42:20.0957375Z Secret source: Actions
+2026-04-06T06:42:20.0958354Z Prepare workflow directory
+2026-04-06T06:42:20.1301588Z Prepare all required actions
+2026-04-06T06:42:20.1339598Z Getting action download info
+2026-04-06T06:42:20.4984242Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-04-06T06:42:20.6121111Z Download action repository 'actions/cache@v4' (SHA:0057852bfaa89a56745cba8c7296529d2fc39830)
+2026-04-06T06:42:20.7100914Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-04-06T06:42:20.9498399Z Complete job name: build
+2026-04-06T06:42:21.0357168Z ##[group]Run actions/checkout@v4
+2026-04-06T06:42:21.0358469Z with:
+2026-04-06T06:42:21.0359530Z   repository: kemp233/OpenWrt-for-XG-040G-MD
+2026-04-06T06:42:21.0360882Z   token: ***
+2026-04-06T06:42:21.0361610Z   ssh-strict: true
+2026-04-06T06:42:21.0362360Z   ssh-user: git
+2026-04-06T06:42:21.0363114Z   persist-credentials: true
+2026-04-06T06:42:21.0363985Z   clean: true
+2026-04-06T06:42:21.0364770Z   sparse-checkout-cone-mode: true
+2026-04-06T06:42:21.0365714Z   fetch-depth: 1
+2026-04-06T06:42:21.0366463Z   fetch-tags: false
+2026-04-06T06:42:21.0367240Z   show-progress: true
+2026-04-06T06:42:21.0368043Z   lfs: false
+2026-04-06T06:42:21.0368741Z   submodules: false
+2026-04-06T06:42:21.0369811Z   set-safe-directory: true
+2026-04-06T06:42:21.0370962Z ##[endgroup]
+2026-04-06T06:42:21.1512235Z Syncing repository: kemp233/OpenWrt-for-XG-040G-MD
+2026-04-06T06:42:21.1514855Z ##[group]Getting Git version info
+2026-04-06T06:42:21.1516607Z Working directory is '/home/runner/work/OpenWrt-for-XG-040G-MD/OpenWrt-for-XG-040G-MD'
+2026-04-06T06:42:21.1518907Z [command]/usr/bin/git version
+2026-04-06T06:42:21.1557039Z git version 2.53.0
+2026-04-06T06:42:21.1586054Z ##[endgroup]
+2026-04-06T06:42:21.1601319Z Temporarily overriding HOME='/home/runner/work/_temp/1b3c7216-7e2c-420f-97cf-f74f76e897b8' before making global git config changes
+2026-04-06T06:42:21.1603994Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-06T06:42:21.1615481Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/OpenWrt-for-XG-040G-MD/OpenWrt-for-XG-040G-MD
+2026-04-06T06:42:21.1647569Z Deleting the contents of '/home/runner/work/OpenWrt-for-XG-040G-MD/OpenWrt-for-XG-040G-MD'
+2026-04-06T06:42:21.1650537Z ##[group]Initializing the repository
+2026-04-06T06:42:21.1655027Z [command]/usr/bin/git init /home/runner/work/OpenWrt-for-XG-040G-MD/OpenWrt-for-XG-040G-MD
+2026-04-06T06:42:21.1742311Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-04-06T06:42:21.1745492Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-04-06T06:42:21.1748670Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-04-06T06:42:21.1751445Z hint: call:
+2026-04-06T06:42:21.1752604Z hint:
+2026-04-06T06:42:21.1754112Z hint: 	git config --global init.defaultBranch <name>
+2026-04-06T06:42:21.1756218Z hint:
+2026-04-06T06:42:21.1758095Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-04-06T06:42:21.1761355Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-04-06T06:42:21.1763571Z hint:
+2026-04-06T06:42:21.1764308Z hint: 	git branch -m <name>
+2026-04-06T06:42:21.1765170Z hint:
+2026-04-06T06:42:21.1766302Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-04-06T06:42:21.1769672Z Initialized empty Git repository in /home/runner/work/OpenWrt-for-XG-040G-MD/OpenWrt-for-XG-040G-MD/.git/
+2026-04-06T06:42:21.1774515Z [command]/usr/bin/git remote add origin https://github.com/kemp233/OpenWrt-for-XG-040G-MD
+2026-04-06T06:42:21.1788689Z ##[endgroup]
+2026-04-06T06:42:21.1791271Z ##[group]Disabling automatic garbage collection
+2026-04-06T06:42:21.1793461Z [command]/usr/bin/git config --local gc.auto 0
+2026-04-06T06:42:21.1822667Z ##[endgroup]
+2026-04-06T06:42:21.1824868Z ##[group]Setting up auth
+2026-04-06T06:42:21.1830250Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-06T06:42:21.1864536Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-06T06:42:21.2161489Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-06T06:42:21.2195854Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-06T06:42:21.2409389Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-06T06:42:21.2441815Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-04-06T06:42:21.2686582Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-04-06T06:42:21.2721239Z ##[endgroup]
+2026-04-06T06:42:21.2723517Z ##[group]Fetching the repository
+2026-04-06T06:42:21.2732898Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ec1c6458a633369cf731bc60cd5cdac016d8bd54:refs/remotes/origin/main
+2026-04-06T06:42:21.5767607Z From https://github.com/kemp233/OpenWrt-for-XG-040G-MD
+2026-04-06T06:42:21.5770661Z  * [new ref]         ec1c6458a633369cf731bc60cd5cdac016d8bd54 -> origin/main
+2026-04-06T06:42:21.5800528Z ##[endgroup]
+2026-04-06T06:42:21.5802274Z ##[group]Determining the checkout info
+2026-04-06T06:42:21.5803768Z ##[endgroup]
+2026-04-06T06:42:21.5807401Z [command]/usr/bin/git sparse-checkout disable
+2026-04-06T06:42:21.5846777Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-04-06T06:42:21.5874813Z ##[group]Checking out the ref
+2026-04-06T06:42:21.5878312Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-04-06T06:42:21.5946659Z Switched to a new branch 'main'
+2026-04-06T06:42:21.5948851Z branch 'main' set up to track 'origin/main'.
+2026-04-06T06:42:21.5956122Z ##[endgroup]
+2026-04-06T06:42:21.5988012Z [command]/usr/bin/git log -1 --format=%H
+2026-04-06T06:42:21.6009396Z ec1c6458a633369cf731bc60cd5cdac016d8bd54
+2026-04-06T06:42:21.6221389Z ##[group]Run sudo apt update
+2026-04-06T06:42:21.6222371Z [36;1msudo apt update[0m
+2026-04-06T06:42:21.6223226Z [36;1msudo apt install -y \[0m
+2026-04-06T06:42:21.6224422Z [36;1m  build-essential clang flex bison g++ gawk gcc-multilib \[0m
+2026-04-06T06:42:21.6226093Z [36;1m  gettext git libncurses-dev libssl-dev python3 python3-distutils \[0m
+2026-04-06T06:42:21.6227549Z [36;1m  rsync unzip zlib1g-dev file wget[0m
+2026-04-06T06:42:21.6259772Z shell: /usr/bin/bash -e {0}
+2026-04-06T06:42:21.6260638Z ##[endgroup]
+2026-04-06T06:42:21.6438689Z 
+2026-04-06T06:42:21.6440033Z WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+2026-04-06T06:42:21.6441367Z 
+2026-04-06T06:42:21.7089862Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-04-06T06:42:21.7409689Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-04-06T06:42:21.7414570Z Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
+2026-04-06T06:42:21.7418642Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-04-06T06:42:21.7423155Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-04-06T06:42:21.7427512Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-04-06T06:42:21.7463748Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-04-06T06:42:21.9081500Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.4 kB]
+2026-04-06T06:42:21.9170422Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [113 kB]
+2026-04-06T06:42:21.9205818Z Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [89.3 kB]
+2026-04-06T06:42:21.9557491Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1875 kB]
+2026-04-06T06:42:21.9660488Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [342 kB]
+2026-04-06T06:42:21.9685377Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [177 kB]
+2026-04-06T06:42:21.9702977Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [16.9 kB]
+2026-04-06T06:42:21.9713579Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1663 kB]
+2026-04-06T06:42:21.9902448Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [322 kB]
+2026-04-06T06:42:21.9927915Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [386 kB]
+2026-04-06T06:42:21.9965353Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.2 kB]
+2026-04-06T06:42:22.0014315Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2894 kB]
+2026-04-06T06:42:22.0205750Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [671 kB]
+2026-04-06T06:42:22.0697203Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Components [212 B]
+2026-04-06T06:42:22.0710673Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+2026-04-06T06:42:22.0735692Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [7368 B]
+2026-04-06T06:42:22.0754478Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [13.1 kB]
+2026-04-06T06:42:22.0777115Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/restricted amd64 Components [216 B]
+2026-04-06T06:42:22.0817474Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Components [212 B]
+2026-04-06T06:42:22.1191982Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1576 kB]
+2026-04-06T06:42:22.1292191Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [252 kB]
+2026-04-06T06:42:22.1312869Z Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [21.5 kB]
+2026-04-06T06:42:22.1325122Z Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [10.7 kB]
+2026-04-06T06:42:22.1344824Z Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1167 kB]
+2026-04-06T06:42:22.1411519Z Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [225 kB]
+2026-04-06T06:42:22.1440379Z Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [74.2 kB]
+2026-04-06T06:42:22.1691614Z Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [22.8 kB]
+2026-04-06T06:42:22.2111124Z Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2757 kB]
+2026-04-06T06:42:22.2266958Z Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [642 kB]
+2026-04-06T06:42:22.2306727Z Get:37 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Components [208 B]
+2026-04-06T06:42:22.2314746Z Get:38 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse amd64 Components [208 B]
+2026-04-06T06:42:31.0518835Z Fetched 15.7 MB in 2s (8704 kB/s)
+2026-04-06T06:42:31.7845931Z Reading package lists...
+2026-04-06T06:42:31.9515367Z Building dependency tree...
+2026-04-06T06:42:31.9521656Z Reading state information...
+2026-04-06T06:42:31.9661941Z 82 packages can be upgraded. Run 'apt list --upgradable' to see them.
+2026-04-06T06:42:31.9771289Z 
+2026-04-06T06:42:31.9771939Z WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+2026-04-06T06:42:31.9774367Z 
+2026-04-06T06:42:31.9882969Z Reading package lists...
+2026-04-06T06:42:32.1486422Z Building dependency tree...
+2026-04-06T06:42:32.1493832Z Reading state information...
+2026-04-06T06:42:32.1625844Z Package python3-distutils is not available, but is referred to by another package.
+2026-04-06T06:42:32.1626844Z This may mean that the package is missing, has been obsoleted, or
+2026-04-06T06:42:32.1627422Z is only available from another source
+2026-04-06T06:42:32.1627742Z 
+2026-04-06T06:42:32.2802030Z E: Package 'python3-distutils' has no installation candidate
+2026-04-06T06:42:32.2834711Z ##[error]Process completed with exit code 100.
+2026-04-06T06:42:32.3033311Z Post job cleanup.
+2026-04-06T06:42:32.3975838Z [command]/usr/bin/git version
+2026-04-06T06:42:32.4011604Z git version 2.53.0
+2026-04-06T06:42:32.4053992Z Temporarily overriding HOME='/home/runner/work/_temp/c4ca9769-36a6-42a5-91ed-086f8d086ee6' before making global git config changes
+2026-04-06T06:42:32.4055013Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-06T06:42:32.4067474Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/OpenWrt-for-XG-040G-MD/OpenWrt-for-XG-040G-MD
+2026-04-06T06:42:32.4102102Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-06T06:42:32.4135097Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-06T06:42:32.4353531Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-06T06:42:32.4373952Z http.https://github.com/.extraheader
+2026-04-06T06:42:32.4385851Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-04-06T06:42:32.4415390Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-06T06:42:32.4626117Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-06T06:42:32.4655505Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-04-06T06:42:32.5751885Z Cleaning up orphan processes
+2026-04-06T06:42:32.6012065Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
