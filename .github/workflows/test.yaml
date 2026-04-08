@@ -142,10 +142,8 @@ jobs:
             exit 1
           fi
           
-          # 减少并行度，避免资源问题
-          make download -j2 V=s
-          
-          # OpenWrt 编译（不需要 defconfig，直接编译）
+          # OpenWrt 编译（直接编译，不需要单独的 download 步骤）
+          echo "Starting OpenWrt compilation (this may take several hours)..."
           make -j2 V=s 2>&1 | tee build.log
           
           # 检查编译结果
