@@ -212,8 +212,14 @@ jobs:
         uses: actions/upload-artifact@v6
         if: env.UPLOAD_FIRMWARE == 'true'
         with:
-          name: OpenWrt_firmware_${{ env.DEVICE_NAME }}_$(date +'%Y%m%d%H%M')  # 修复：移除双引号
+          name: OpenWrt_firmware_${{ env.DEVICE_NAME }}_$(date +'%Y%m%d%H%M')
           path: ${{ env.FIRMWARE_DIR }}/*
+
+      - name: Fix translations
+        run: |
+          cd openwrt/feeds/luci/applications/luci-app-cups
+          make pot
+          make lang
 
       - name: Upload build artifacts for reuse
         uses: actions/upload-artifact@v6
@@ -221,6 +227,8 @@ jobs:
         with:
           name: OpenWrt_build_artifacts
           path: artifacts/*
+          # Explicitly zip directories to fix upload issues
+          if-no-files-found: error
 
       - name: Generate release notes
         id: tag
