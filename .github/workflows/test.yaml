@@ -212,7 +212,7 @@ jobs:
         uses: actions/upload-artifact@v6
         if: env.UPLOAD_FIRMWARE == 'true'
         with:
-          name: OpenWrt_firmware_${{ env.DEVICE_NAME }}_$(date +"%Y%m%d%H%M")
+          name: OpenWrt_firmware_${{ env.DEVICE_NAME }}_$(date +'%Y%m%d%H%M')  # 修复：移除双引号
           path: ${{ env.FIRMWARE_DIR }}/*
 
       - name: Upload build artifacts for reuse
