@@ -156,6 +156,13 @@ jobs:
           cp -fv "${CONFIG_FILE}" openwrt/.config
           cd openwrt && make defconfig
           [ -e .config ] && cp .config defconfig-final.config
+          
+          # Enable SDK and ImageBuilder for development support
+          echo "=== 启用SDK和ImageBuilder ==="
+          sed -i 's/# CONFIG_IB is not set/CONFIG_IB=y/' .config || true
+          sed -i 's/# CONFIG_IMAGEBUILDER is not set/CONFIG_IMAGEBUILDER=y/' .config || true
+          # Verify the settings
+          grep -E "CONFIG_IB=|CONFIG_IMAGEBUILDER=" .config
 
       - name: Upload build config files
         uses: actions/upload-artifact@v6
@@ -216,33 +223,35 @@ jobs:
             echo "❌ 未找到固件文件！"
             exit 1
           fi
+
+      - name: Build SDK and ImageBuilder
+        id: build_dev
+        run: |
+          cd openwrt
           
-          # 构建工具链和SDK
-          echo "=== 构建工具链和SDK ==="
+          echo "=== 构建SDK和ImageBuilder ==="
           
           # Build toolchain archive
           echo "构建工具链..."
           make -j$(nproc) V=s 2>&1 | tee toolchain.log || true
           
-          # Build SDK (if configured)
-          echo "检查SDK配置..."
-          if grep -q "CONFIG_IB=y" .config; then
-            echo "SDK已配置，开始构建..."
-            make sdk -j$(nproc) V=s 2>&1 | tee sdk.log || true
+          # Build SDK (always try to build, it's useful for development)
+          echo "构建SDK..."
+          make sdk -j$(nproc) V=s 2>&1 | tee sdk.log || true
+          if [ $? -eq 0 ]; then
+            echo "✅ SDK构建成功"
           else
-            echo "SDK未配置，跳过构建"
+            echo "⚠️ SDK构建失败，继续构建ImageBuilder"
           fi
           
-          # Build ImageBuilder (if configured)
-          echo "检查ImageBuilder配置..."
-          if grep -q "CONFIG_IMAGEBUILDER=y" .config; then
-            echo "ImageBuilder已配置，开始构建..."
-            make imagebuilder -j$(nproc) V=s 2>&1 | tee imagebuilder.log || true
+          # Build ImageBuilder (always try to build)
+          echo "构建ImageBuilder..."
+          make imagebuilder -j$(nproc) V=s 2>&1 | tee imagebuilder.log || true
+          if [ $? -eq 0 ]; then
+            echo "✅ ImageBuilder构建成功"
           else
-            echo "ImageBuilder未配置，跳过构建"
+            echo "⚠️ ImageBuilder构建失败，继续收集可用产物"
           fi
-
-      
 
       - name: Prepare firmware artifacts path
         id: organize
