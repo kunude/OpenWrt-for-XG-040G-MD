@@ -68,17 +68,47 @@ jobs:
           
           ls -la prebuilt/
 
-      - name: Clone OpenWrt source code and apply patches
+      - name: Clone OpenWrt build environment and apply patches
         run: |
+          # 克隆 OpenWrt 构建环境
           git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" openwrt
-          cd patch
-          [ -e airoha/01_leds ] && cp -f airoha/01_leds ../openwrt/target/linux/airoha/an7581/base-files/etc/board.d/01_leds
-          [ -e airoha/02_network ] && cp -f airoha/02_network ../openwrt/target/linux/airoha/an7581/base-files/etc/board.d/02_network
-          [ -e airoha/an7581.mk ] && cp -f airoha/an7581.mk ../openwrt/target/linux/airoha/image/an7581.mk
-          [ -e airoha/an7581-nokia_xg-040g-md.dts ] && cp -f airoha/an7581-nokia_xg-040g-md.dts ../openwrt/target/linux/airoha/dts/an7581-nokia_xg-040g-md.dts
-          [ -d "airoha/patches-6.12" ] && cp -f airoha/patches-6.12/*.patch ../openwrt/target/linux/airoha/patches-6.12/
-          [ -d "mediatek/patches-6.12" ] && cp -f mediatek/patches-6.12/*.patch ../openwrt/target/linux/mediatek/patches-6.12/
-          [ -d "generic/pending-6.12" ] && find generic/pending-6.12/ -name "*.patch" ! -name "499-mtd-spinand-FudanMicro-FM25G02B.patch" -exec cp -f {} ../openwrt/target/linux/generic/pending-6.12/ \;
+          
+          # 进入 openwrt 目录
+          cd openwrt
+          
+          # 修复内核版本配置
+          if [ -d "target/linux/generic" ]; then
+            # 检查内核版本文件
+            KERNEL_VERSION=$(ls target/linux/generic/kernel-* 2>/dev/null | head -1)
+            if [ -z "$KERNEL_VERSION" ]; then
+              # 创建默认内核版本文件（适配 OpenWrt 23.05+）
+              echo "CONFIG_KERNEL_6_1=y" > target/linux/generic/kernel-6.1
+              echo "Kernel version file created for 6.1"
+            fi
+          fi
+          
+          # 应用补丁
+          [ -e ../patch/airoha/01_leds ] && cp -f ../patch/airoha/01_leds target/linux/airoha/an7581/base-files/etc/board.d/01_leds
+          [ -e ../patch/airoha/02_network ] && cp -f ../patch/airoha/02_network target/linux/airoha/an7581/base-files/etc/board.d/02_network
+          [ -e ../patch/airoha/an7581.mk ] && cp -f ../patch/airoha/an7581.mk target/linux/airoha/image/an7581.mk
+          [ -e ../patch/airoha/an7581-nokia_xg-040g-md.dts ] && cp -f ../patch/airoha/an7581-nokia_xg-040g-md.dts target/linux/airoha/dts/an7581-nokia_xg-040g-md.dts
+          [ -d "../patch/airoha/patches-6.12" ] && cp -f ../patch/airoha/patches-6.12/*.patch target/linux/airoha/patches-6.12/
+          [ -d "../patch/mediatek/patches-6.12" ] && cp -f ../patch/mediatek/patches-6.12/*.patch target/linux/mediatek/patches-6.12/
+          [ -d "../patch/generic/pending-6.12" ] && find ../patch/generic/pending-6.12/ -name "*.patch" ! -name "499-mtd-spinand-FudanMicro-FM25G02B.patch" -exec cp -f {} target/linux/generic/pending-6.12/ \;
+          
+          # 复制配置文件到构建环境
+          cp -fv "../${CONFIG_FILE}" .config
+          
+          # 验证配置文件
+          if [ ! -f ".config" ]; then
+            echo "Error: Config file not copied to openwrt directory"
+            exit 1
+          fi
+          
+          echo "OpenWrt build environment ready"
+          echo "Makefile: $(test -f Makefile && echo 'FOUND' || echo 'MISSING')"
+          echo "Config: $(test -f .config && echo 'FOUND' || echo 'MISSING')"
+          echo "Kernel version: $(ls target/linux/generic/kernel-* 2>/dev/null | head -1 || echo 'NOT FOUND')"
 
       - name: Update feeds (minimal)
         working-directory: ./openwrt
