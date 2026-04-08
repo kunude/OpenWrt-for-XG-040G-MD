@@ -142,11 +142,10 @@ jobs:
             exit 1
           fi
           
-          make defconfig
-          
           # 减少并行度，避免资源问题
           make download -j2 V=s
           
+          # OpenWrt 编译（不需要 defconfig，直接编译）
           make -j2 V=s 2>&1 | tee build.log
           
           # 检查编译结果
