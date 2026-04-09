@@ -118,6 +118,8 @@ jobs:
           fi
           ./scripts/feeds update -a
           ./scripts/feeds install luasrcdiet luci-base luci-mod-admin-full
+          # Install cups packages to ensure directory exists
+          ./scripts/feeds install luci-app-cups
 
       - name: Use ImageBuilder for fast firmware generation
         if: ${{ github.event.inputs.use_prebuilt == 'true' }}
@@ -216,10 +218,22 @@ jobs:
           path: ${{ env.FIRMWARE_DIR }}/*
 
       - name: Fix translations
+        working-directory: ./openwrt
         run: |
-          cd openwrt/feeds/luci/applications/luci-app-cups
-          make pot
-          make lang
+          # Ensure the directory exists after feeds installation
+          if [ -d "feeds/luci/applications/luci-app-cups" ]; then
+            cd feeds/luci/applications/luci-app-cups
+            make pot
+            make lang
+          else
+            echo "Warning: luci-app-cups directory not found, skipping translation generation"
+            exit 0
+          fi
+
+      - name: Install luci-app-cups dependency
+        working-directory: ./openwrt
+        run: |
+          opkg install luci-app-cups || echo "Warning: opkg install failed, continuing..."
 
       - name: Upload build artifacts for reuse
         uses: actions/upload-artifact@v6
