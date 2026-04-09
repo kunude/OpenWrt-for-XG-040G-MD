@@ -244,6 +244,22 @@ jobs:
           # Explicitly zip directories to fix upload issues
           if-no-files-found: error
 
+      - name: Check firmware files
+        working-directory: ./openwrt
+        run: |
+          # Check firmware files
+          FIRMWARE_FILES=$(find bin -type f \( -name "*.bin" -o -name "*.img" \) 2>/dev/null)
+          if [ -z "$FIRMWARE_FILES" ]; then
+            echo "Error: No firmware files found"
+            echo "Checking bin directory..."
+            ls -la bin/
+            echo "Checking targets directory..."
+            ls -la bin/targets/ 2>/dev/null || echo "No targets directory"
+            exit 1
+          fi
+          echo "FIRMWARE_DIR=$PWD/bin" >> $GITHUB_ENV
+          echo "Found firmware files: $FIRMWARE_FILES"
+
       - name: Generate release notes
         id: tag
         if: env.UPLOAD_RELEASE == 'true'
