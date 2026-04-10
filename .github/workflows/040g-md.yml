@@ -101,55 +101,22 @@ jobs:
           fi
           ./scripts/feeds update -a
           
-          # Explicitly install critical packages first to ensure they are available
-          # when the config is processed (important for GitHub Actions)
-          # Install luasrcdiet first (required for LuCI compilation)
-          ./scripts/feeds install luasrcdiet
+           # 1. 安装 PassWall 主程序及语言包
+          ./scripts/feeds install luci-app-passwall
+          ./scripts/feeds install luci-i18n-passwall-zh-cn
           
-          # Then install critical LuCI packages
-          ./scripts/feeds install luci-base
-          ./scripts/feeds install luci-mod-admin-full
-          ./scripts/feeds install luci-app-cups
-          ./scripts/feeds install luci-i18n-base-zh-cn
-          ./scripts/feeds install luci-i18n-cups-zh-cn
-          ./scripts/feeds install cups
-          ./scripts/feeds install cups-filters
-          ./scripts/feeds install cups-ppdc
-          
-          # Then install all other packages
+          # 2. 安装其他你需要的软件 (DDNS-Go, UDPXY, WireGuard, QRencode)
+          ./scripts/feeds install luci-app-ddns-go luci-i18n-ddns-go-zh-cn
+          ./scripts/feeds install luci-app-udpxy luci-i18n-udpxy-zh-cn
+          ./scripts/feeds install luci-app-wireguard luci-i18n-wireguard-zh-cn
+          ./scripts/feeds install qrencode
+
+          # 3. 安装你原有的 LuCI 基础包和 CUPS
+          ./scripts/feeds install luasrcdiet luci-base luci-mod-admin-full
+          ./scripts/feeds install luci-app-cups luci-i18n-base-zh-cn luci-i18n-cups-zh-cn cups cups-filters cups-ppdc
+
+          # 4. 安装所有包及其依赖 (这会自动拉取 passwall_packages 中的依赖)
           ./scripts/feeds install -a -f
-          # ./scripts/feeds install \
-          #   airoha-en7581-npu-firmware \
-          #   apk \
-          #   dnsmasq \
-          #   dropbear \
-          #   firewall4 \
-          #   fstools \
-          #   ip-full \
-          #   kmod-gpio-button-hotplug \
-          #   kmod-i2c-an7581 \
-          #   kmod-leds-gpio \
-          #   kmod-phy-airoha-en8811h \
-          #   logd \
-          #   mtd \
-          #   netifd \
-          #   odhcp6c \
-          #   odhcpd-ipv6only \
-          #   ppp \
-          #   ppp-mod-pppoe \
-          #   procd \
-          #   uci \
-          #   uclient-fetch \
-          #   uboot-envtools \
-          #   ubi-utils \
-          #   urandom-seed \
-          #   urngd \
-          #   usign \
-          #   umdns \
-          #   luci \
-          #   luci-base \
-          #   luci-mod-admin-full \
-          #   luci-ssl
 
       - name: Copy configuration and defconfig
         run: |
