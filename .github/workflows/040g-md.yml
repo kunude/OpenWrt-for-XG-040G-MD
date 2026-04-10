@@ -89,6 +89,7 @@ jobs:
           [ -e airoha/an7581-nokia_xg-040g-md.dts ] && cp -f airoha/an7581-nokia_xg-040g-md.dts ../openwrt/target/linux/airoha/dts/an7581-nokia_xg-040g-md.dts
           [ -d "airoha/patches-6.12" ] && cp -f airoha/patches-6.12/*.patch ../openwrt/target/linux/airoha/patches-6.12/
           [ -d "mediatek/patches-6.12" ] && cp -f mediatek/patches-6.12/*.patch ../openwrt/target/linux/mediatek/patches-6.12/
+          [ -d "generic/pending-6.12" ] && cp -f generic/pending-6.12/*.patch ../openwrt/target/linux/generic/pending-6.12/
           # 跳过损坏的补丁文件 499-mtd-spinand-FudanMicro-FM25G02B.patch
           #  [ -d "generic/pending-6.12" ] && find generic/pending-6.12/ -name "*.patch" ! -name "499-mtd-spinand-FudanMicro-FM25G02B.patch" -exec cp -f {} ../openwrt/target/linux/generic/pending-6.12/ \;
 
