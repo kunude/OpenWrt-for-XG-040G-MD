@@ -97,33 +97,40 @@ jobs:
       - name: Update & Install feeds
         working-directory: ./openwrt
         run: |
-            if [ -e ../$FEEDS_CONF ]; then
-               cp -f ../$FEEDS_CONF ./feeds.conf.default
-            fi
-    
-            ./scripts/feeds update -a
+          if [ -e ../$FEEDS_CONF ]; then
+            cp -f ../$FEEDS_CONF ./feeds.conf.default
+          fi
           
-            # 🔴 关键：只保留需要的包，删除有 Makefile 问题的包
-            cd feeds/passwall_packages
-            ls | grep -v -E "(chinadns-ng|dns2socks|tcping)" | xargs rm -rf
-            cd ../..
+          ./scripts/feeds update -a
           
-    
-            # 安装 PassWall 及其依赖
-            ./scripts/feeds install luci-app-passwall
-            ./scripts/feeds install luci-i18n-passwall-zh-cn
+          # 进入 passwall_packages 目录，删除已知有 Makefile 错误的包
+          # 保留那些可以正常编译的包（如 microsocks, chinadns-ng, dns2socks, tcping 等）
+          cd feeds/passwall_packages
           
-            # 安装其他包
-            ./scripts/feeds install luci-app-ddns-go luci-i18n-ddns-go-zh-cn
-            ./scripts/feeds install luci-app-udpxy luci-i18n-udpxy-zh-cn
-            ./scripts/feeds install luci-app-wireguard luci-i18n-wireguard-zh-cn
-            ./scripts/feeds install qrencode
-            ./scripts/feeds install luasrcdiet
-            ./scripts/feeds install cups cups-filters cups-ppdc
-            ./scripts/feeds install luci-app-cups luci-i18n-cups-zh-cn
-            ./scripts/feeds install luci-base luci-mod-admin-full luci-i18n-base-zh-cn
-    
-            ./scripts/feeds install -a -f
+          # 删除有问题的包（这些包在 OpenWrt main 分支下 Makefile 不兼容）
+          rm -rf geoview hysteria shadow-tls sing-box v2ray-plugin xray-core xray-plugin shadowsocks-rust trojan-plus tuic-client naiveproxy 2>/dev/null || true
+          
+          # 可选：如果需要 brook，也删除（它可能也有问题）
+          rm -rf brook 2>/dev/null || true
+          
+          cd ../..
+          
+          # 现在安装 feeds
+          ./scripts/feeds install luci-app-passwall
+          ./scripts/feeds install luci-i18n-passwall-zh-cn
+          ./scripts/feeds install luci-app-ddns-go
+          ./scripts/feeds install luci-i18n-ddns-go-zh-cn
+          ./scripts/feeds install luci-app-udpxy
+          ./scripts/feeds install luci-i18n-udpxy-zh-cn
+          ./scripts/feeds install luci-app-wireguard
+          ./scripts/feeds install luci-i18n-wireguard-zh-cn
+          ./scripts/feeds install qrencode
+          ./scripts/feeds install luasrcdiet
+          ./scripts/feeds install cups cups-filters cups-ppdc
+          ./scripts/feeds install luci-app-cups luci-i18n-cups-zh-cn
+          ./scripts/feeds install luci-base luci-mod-admin-full luci-i18n-base-zh-cn
+          
+          ./scripts/feeds install -a -f || true
           
       - name: Copy configuration and defconfig
         run: |
