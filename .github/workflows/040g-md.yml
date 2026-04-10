@@ -92,32 +92,40 @@ jobs:
           [ -d "generic/pending-6.12" ] && cp -f generic/pending-6.12/*.patch ../openwrt/target/linux/generic/pending-6.12/
           # 跳过损坏的补丁文件 499-mtd-spinand-FudanMicro-FM25G02B.patch
           #  [ -d "generic/pending-6.12" ] && find generic/pending-6.12/ -name "*.patch" ! -name "499-mtd-spinand-FudanMicro-FM25G02B.patch" -exec cp -f {} ../openwrt/target/linux/generic/pending-6.12/ \;
-
-
+    
+    
       - name: Update & Install feeds
         working-directory: ./openwrt
         run: |
-          if [ -e ../$FEEDS_CONF ]; then
-            cp -f ../$FEEDS_CONF ./feeds.conf.default
-          fi
-          ./scripts/feeds update -a
-          
-           # 1. 安装 PassWall 主程序及语言包
-          ./scripts/feeds install luci-app-passwall
-          ./scripts/feeds install luci-i18n-passwall-zh-cn
-          
-          # 2. 安装其他你需要的软件 (DDNS-Go, UDPXY, WireGuard, QRencode)
-          ./scripts/feeds install luci-app-ddns-go luci-i18n-ddns-go-zh-cn
-          ./scripts/feeds install luci-app-udpxy luci-i18n-udpxy-zh-cn
-          ./scripts/feeds install luci-app-wireguard luci-i18n-wireguard-zh-cn
-          ./scripts/feeds install qrencode
-
-          # 3. 安装你原有的 LuCI 基础包和 CUPS
-          ./scripts/feeds install luasrcdiet luci-base luci-mod-admin-full
-          ./scripts/feeds install luci-app-cups luci-i18n-base-zh-cn luci-i18n-cups-zh-cn cups cups-filters cups-ppdc
-
-          # 4. 安装所有包及其依赖 (这会自动拉取 passwall_packages 中的依赖)
-          ./scripts/feeds install -a -f
+            # 清理残留
+            rm -rf feeds/cups feeds/ddnsgo 2>/dev/null || true
+    
+            if [ -e ../$FEEDS_CONF ]; then
+              cp -f ../$FEEDS_CONF ./feeds.conf.default
+             fi
+    
+            echo "=== 更新 feeds ==="
+            ./scripts/feeds update -a
+    
+            echo "=== 修复有问题的 Makefile ==="
+             # 删除严重不兼容的包（可选，根据需要调整）
+            # rm -rf feeds/passwall_packages/{hysteria,sing-box,shadow-tls} 2>/dev/null || true
+            echo "=== 安装核心包 ==="
+            ./scripts/feeds install luci-app-passwall
+            ./scripts/feeds install luci-i18n-passwall-zh-cn
+            ./scripts/feeds install luci-app-ddns-go
+            ./scripts/feeds install luci-i18n-ddns-go-zh-cn
+            ./scripts/feeds install luci-app-udpxy
+            ./scripts/feeds install luci-i18n-udpxy-zh-cn
+            ./scripts/feeds install luci-app-wireguard
+            ./scripts/feeds install luci-i18n-wireguard-zh-cn
+            ./scripts/feeds install qrencode
+            ./scripts/feeds install luasrcdiet
+            ./scripts/feeds install cups cups-filters cups-ppdc
+            ./scripts/feeds install luci-app-cups luci-i18n-cups-zh-cn
+    
+            echo "=== 安装所有包 ==="
+            ./scripts/feeds install -a -f || true
 
       - name: Copy configuration and defconfig
         run: |
