@@ -97,36 +97,55 @@ jobs:
       - name: Update & Install feeds
         working-directory: ./openwrt
         run: |
-            # 清理残留
-            rm -rf feeds/cups feeds/ddnsgo 2>/dev/null || true
-    
-            if [ -e ../$FEEDS_CONF ]; then
-              cp -f ../$FEEDS_CONF ./feeds.conf.default
-             fi
-    
-            echo "=== 更新 feeds ==="
-            ./scripts/feeds update -a
-    
-            echo "=== 修复有问题的 Makefile ==="
-             # 删除严重不兼容的包（可选，根据需要调整）
-            # rm -rf feeds/passwall_packages/{hysteria,sing-box,shadow-tls} 2>/dev/null || true
-            echo "=== 安装核心包 ==="
-            ./scripts/feeds install luci-app-passwall
-            ./scripts/feeds install luci-i18n-passwall-zh-cn
-            ./scripts/feeds install luci-app-ddns-go
-            ./scripts/feeds install luci-i18n-ddns-go-zh-cn
-            ./scripts/feeds install luci-app-udpxy
-            ./scripts/feeds install luci-i18n-udpxy-zh-cn
-            ./scripts/feeds install luci-app-wireguard
-            ./scripts/feeds install luci-i18n-wireguard-zh-cn
-            ./scripts/feeds install qrencode
-            ./scripts/feeds install luasrcdiet
-            ./scripts/feeds install cups cups-filters cups-ppdc
-            ./scripts/feeds install luci-app-cups luci-i18n-cups-zh-cn
-    
-            echo "=== 安装所有包 ==="
-            ./scripts/feeds install -a -f || true
-
+          # 清理可能存在的旧索引
+          rm -rf feeds/cups feeds/ddnsgo 2>/dev/null || true
+          
+          # 1. 复制自定义的 feeds 配置文件
+          if [ -e ../$FEEDS_CONF ]; then
+            cp -f ../$FEEDS_CONF ./feeds.conf.default
+          fi
+          
+          # 2. 更新 feeds
+          echo "=== 更新 feeds ==="
+          ./scripts/feeds update -a
+          
+          # 3. 关键修复：删除编译报错的 PassWall 包
+          #    这些包与当前 OpenWrt main 分支不兼容，先移除它们
+          echo "=== 移除不兼容的包 ==="
+          rm -rf feeds/passwall_packages/geoview
+          rm -rf feeds/passwall_packages/hysteria
+          rm -rf feeds/passwall_packages/shadow-tls
+          rm -rf feeds/passwall_packages/shadowsocks-rust
+          rm -rf feeds/passwall_packages/sing-box
+          rm -rf feeds/passwall_packages/v2ray-plugin
+          rm -rf feeds/passwall_packages/xray-core
+          rm -rf feeds/passwall_packages/xray-plugin
+          
+          # 4. 安装所有软件包
+          echo "=== 安装核心包 ==="
+          #    安装 luci-app-passwall (这会自动安装 xray-core 等依赖，如果它们存在于 packages feed 中)
+          ./scripts/feeds install luci-app-passwall
+          ./scripts/feeds install luci-i18n-passwall-zh-cn
+          
+          #    安装其他你需要的包 (DDNS-Go 现在来自官方 packages feed)
+          ./scripts/feeds install luci-app-ddns-go
+          ./scripts/feeds install luci-i18n-ddns-go-zh-cn
+          ./scripts/feeds install luci-app-udpxy
+          ./scripts/feeds install luci-i18n-udpxy-zh-cn
+          ./scripts/feeds install luci-app-wireguard
+          ./scripts/feeds install luci-i18n-wireguard-zh-cn
+          ./scripts/feeds install qrencode
+          
+          #    安装你原有的其他包
+          ./scripts/feeds install luasrcdiet
+          ./scripts/feeds install cups cups-filters cups-ppdc
+          ./scripts/feeds install luci-app-cups luci-i18n-cups-zh-cn
+          ./scripts/feeds install luci-base luci-mod-admin-full luci-i18n-base-zh-cn
+          
+          # 5. 最后，安装所有剩余的包并忽略可能的依赖错误
+          echo "=== 安装所有剩余包 ==="
+          ./scripts/feeds install -a -f || true
+          
       - name: Copy configuration and defconfig
         run: |
           cp -fv "${CONFIG_FILE}" openwrt/.config
