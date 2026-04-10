@@ -97,28 +97,24 @@ jobs:
       - name: Update & Install feeds
         working-directory: ./openwrt
         run: |
-          if [ -e ../$FEEDS_CONF ]; then
-            cp -f ../$FEEDS_CONF ./feeds.conf.default
-          fi
-          
-          ./scripts/feeds update -a
-          
-          # 安装所有需要的包
-          ./scripts/feeds install luci-app-passwall
-          ./scripts/feeds install luci-i18n-passwall-zh-cn
-          ./scripts/feeds install luci-app-ddns-go
-          ./scripts/feeds install luci-i18n-ddns-go-zh-cn
-          ./scripts/feeds install luci-app-udpxy
-          ./scripts/feeds install luci-i18n-udpxy-zh-cn
-          ./scripts/feeds install luci-app-wireguard
-          ./scripts/feeds install luci-i18n-wireguard-zh-cn
-          ./scripts/feeds install qrencode
-          ./scripts/feeds install luasrcdiet
-          ./scripts/feeds install cups cups-filters cups-ppdc
-          ./scripts/feeds install luci-app-cups luci-i18n-cups-zh-cn
-          ./scripts/feeds install luci-base luci-mod-admin-full luci-i18n-base-zh-cn
-          
-          ./scripts/feeds install -a -f
+            if [ -e ../$FEEDS_CONF ]; then
+               cp -f ../$FEEDS_CONF ./feeds.conf.default
+            fi
+    
+            ./scripts/feeds update -a
+    
+              # 安装所有需要的包
+            ./scripts/feeds install luci-app-passwall luci-i18n-passwall-zh-cn
+            ./scripts/feeds install luci-app-ddns-go luci-i18n-ddns-go-zh-cn
+            ./scripts/feeds install luci-app-udpxy luci-i18n-udpxy-zh-cn
+            ./scripts/feeds install luci-app-wireguard luci-i18n-wireguard-zh-cn
+            ./scripts/feeds install qrencode
+            ./scripts/feeds install luasrcdiet
+            ./scripts/feeds install cups cups-filters cups-ppdc
+            ./scripts/feeds install luci-app-cups luci-i18n-cups-zh-cn
+            ./scripts/feeds install luci-base luci-mod-admin-full luci-i18n-base-zh-cn
+    
+            ./scripts/feeds install -a -f
           
       - name: Copy configuration and defconfig
         run: |
