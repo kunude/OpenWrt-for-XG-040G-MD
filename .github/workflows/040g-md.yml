@@ -102,9 +102,18 @@ jobs:
             fi
     
             ./scripts/feeds update -a
+          
+            # 🔴 关键：只保留需要的包，删除有 Makefile 问题的包
+            cd feeds/passwall_packages
+            ls | grep -v -E "(chinadns-ng|dns2socks|tcping)" | xargs rm -rf
+            cd ../..
+          
     
-              # 安装所有需要的包
-            ./scripts/feeds install luci-app-passwall luci-i18n-passwall-zh-cn
+            # 安装 PassWall 及其依赖
+            ./scripts/feeds install luci-app-passwall
+            ./scripts/feeds install luci-i18n-passwall-zh-cn
+          
+            # 安装其他包
             ./scripts/feeds install luci-app-ddns-go luci-i18n-ddns-go-zh-cn
             ./scripts/feeds install luci-app-udpxy luci-i18n-udpxy-zh-cn
             ./scripts/feeds install luci-app-wireguard luci-i18n-wireguard-zh-cn
