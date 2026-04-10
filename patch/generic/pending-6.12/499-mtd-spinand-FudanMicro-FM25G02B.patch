@@ -69,5 +69,4 @@
  	.ops = &fmsh_spinand_manuf_ops,
  };
 +
-
-
+EOF
